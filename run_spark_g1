@@ -11,7 +11,7 @@ else
 fi
 
 sudo systemd-run --scope -p MemoryLimit=${MEMORY_LIMIT}M -p AllowedCPUs=21,22,23,24,25,36,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46 \
-	/home/adam/jdk11u/build/linux-x86_64-normal-server-release/jdk/bin/java \
+	/home/legrain/jdk11u/build/linux-x86_64-normal-server-release/jdk/bin/java \
 	-XX:AllocateHeapAt=/dev/astenn \
 	-Xlog:gc=debug \
 	-XX:-OptimizeStringConcat \
@@ -24,5 +24,5 @@ sudo systemd-run --scope -p MemoryLimit=${MEMORY_LIMIT}M -p AllowedCPUs=21,22,23
        	-Xms24g \
 	-Xmx24g \
 	-Djboss.socket.binding.port-offset=100 \
-	-classpath "/home/adam/Spark_benchmark/spark_blk/conf/:/home/adam/Spark_benchmark/spark_blk/jars/*" \
-	org.apache.spark.deploy.SparkSubmit  --master local[*] --class "${EXP}" /home/adam/Spark_benchmark/spark_run/run.jar --conf spark.executor.heartbeatInterval=100000
+	-classpath "/home/legrain/Spark_benchmark/spark_blk/conf/:/home/legrain/Spark_benchmark/spark_blk/jars/*" \
+	org.apache.spark.deploy.SparkSubmit  --master local[*] --class "${EXP}" /home/legrain/Spark_benchmark/spark_run/run.jar --conf spark.executor.heartbeatInterval=100000

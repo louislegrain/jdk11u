@@ -1,2 +1,2 @@
 #!/bin/bash
-export JAVA_HOME=/home/adam/jdk11u/build/linux-x86_64-normal-server-release/images/jdk
+export JAVA_HOME=/home/legrain/jdk11u/build/linux-x86_64-normal-server-release/images/jdk

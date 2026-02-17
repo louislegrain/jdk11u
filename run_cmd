@@ -1,4 +1,4 @@
-sudo systemd-run --scope -p MemoryLimit=1536M numactl --preferred=0 /home/adam/jdk11u/build/linux-x86_64-normal-server-release/images/jdk/bin/jdb -J-XX:AllocateHeapAt=/dev/fakeblk -J-XX:+UnlockExperimentalVMOptions -J-XX:-UseTLAB -J-XX:+UseEpsilonGC -J-Xnoclassgc -J-XX:-UseCodeCacheFlushing -J-Xmx16g -XX:+AlwaysPreTouch -classpath /home/adam/Spark_benchmark/spark_blk/conf/:/home/adam/Spark_benchmark/spark_blk/jars/* -org.apache.spark.deploy.SparkSubmit --master local[*] -class WordCount /home/adam/Spark_benchmark/spark_run/run.jar
+sudo systemd-run --scope -p MemoryLimit=1536M numactl --preferred=0 /home/legrain/jdk11u/build/linux-x86_64-normal-server-release/images/jdk/bin/jdb -J-XX:AllocateHeapAt=/dev/fakeblk -J-XX:+UnlockExperimentalVMOptions -J-XX:-UseTLAB -J-XX:+UseEpsilonGC -J-Xnoclassgc -J-XX:-UseCodeCacheFlushing -J-Xmx16g -XX:+AlwaysPreTouch -classpath /home/legrain/Spark_benchmark/spark_blk/conf/:/home/legrain/Spark_benchmark/spark_blk/jars/* -org.apache.spark.deploy.SparkSubmit --master local[*] -class WordCount /home/legrain/Spark_benchmark/spark_run/run.jar
 
 
 //without c2 jit
