@@ -45,8 +45,6 @@ std::atomic<size_t> softmax;
 std::atomic<uint64_t> free_space;
 struct ticket_lock ticket;
 
-std::atomic<bool> initialized;
-
 void* start_addr;
 uint64_t cap;
 std::atomic<uint64_t> used_;
@@ -61,7 +59,6 @@ void* fsync_constantly(void* arg);
 
 
 RemoteSpace::RemoteSpace() : ContiguousSpace() {
-	initialized.store(false);
 	if(sockfd_remote < 0){
 	    sockfd_remote = socket(AF_INET, SOCK_STREAM, 0);
 	    if (sockfd_remote < 0)
@@ -98,7 +95,10 @@ RemoteSpace::~RemoteSpace(){
 
 int alloc_fd;
 
+int64_t start_time;
+
 void RemoteSpace::initialize(MemRegion mr, bool clear_space, bool mangle_space) {
+	start_time = (int64_t)(((int64_t)os::javaTimeNanos()) / 1e9 );
 #if GCHELPER
 	_mr = mr;
 #endif
@@ -131,7 +131,8 @@ void RemoteSpace::initialize(MemRegion mr, bool clear_space, bool mangle_space) 
 	RemoteSpace::poule = nullptr;
 	cap = mr_word_size*8;
 	free_space.store(cap);
-	softmax.store((cap*SOFTMAX_PER)/100);
+	//softmax.store((cap*SOFTMAX_PER)/100);
+	softmax.store((GB)/100);
 	used_.store(0);
 	collecting.store(false);
 	
@@ -152,16 +153,16 @@ void RemoteSpace::initialize(MemRegion mr, bool clear_space, bool mangle_space) 
 	printf("madvise ret: %d\n",ret);
 	
 	SharedMem::init_ticket_lock(&ticket);
-	//pthread_t fsync_thread;
-	//pthread_create(&fsync_thread, NULL,fsync_constantly, NULL);
+	pthread_t fsync_thread;
+	pthread_create(&fsync_thread, NULL,fsync_constantly, NULL);
 	
-	initialized.store(true);
+	
 }
 
 void* fsync_constantly(void* arg){
 	while(true){
-		msync(start_addr, cap, MS_ASYNC);
-		sleep(1);
+		msync(start_addr, cap, MS_SYNC);
+		usleep(100000);
 		//sleep();
 	}	
 }
@@ -175,8 +176,6 @@ void RemoteSpace::post_initialize(){
 }
 
 HeapWord *RemoteSpace::par_allocate(size_t word_size) {
-	while(!initialized.load())
-		sleep(1);
     counter++;
     struct msg_par_allocate * msg = (struct msg_par_allocate*) calloc(1,sizeof(struct msg_par_allocate));
 
@@ -200,8 +199,6 @@ HeapWord *RemoteSpace::par_allocate(size_t word_size) {
 
 
 HeapWord *RemoteSpace::par_allocate_klass(size_t word_size, Klass* klass) {
-	while(!initialized.load())
-		sleep(1);
 	HeapWord* allocated;
 	//printf("Test alloc wait lock");
 	//printf("Tentative d'alloc\n");
@@ -313,8 +310,8 @@ void RemoteSpace::concurrent_post_allocate(HeapWord*allocated, size_t word_size,
 }
 
 void RemoteSpace::slow_path_post_alloc(uint64_t used_local){
-	used_.fetch_add(used_local*8);
 
+	used_.fetch_add(used_local*8);
 	if(used_glob() >= (softmax.load()*COLLECTION_THRESHOLD)/100  ){
 		bool collected = false;
 		if(collecting.compare_exchange_strong(collected, true)){
@@ -328,6 +325,14 @@ void RemoteSpace::slow_path_post_alloc(uint64_t used_local){
 
 }
 
+void RemoteSpace::update_size(uint64_t used_local){
+	//used_.fetch_add(used_local*8);
+
+
+	//lock_collect.unlock();
+	//
+
+}
 
 void RemoteSpace::set_end(HeapWord* value){
     struct msg_set_end msg;
@@ -386,7 +391,7 @@ void RemoteSpace::stw_pre_collect() {
     clock_gettime(CLOCK_MONOTONIC, &start);
 	//lock_collect.lock();
 	//test_collect.fetch_add(1);
-	printf("[téléGC] Start of collection: Used: %luM (%lu%%)\n",  used_glob()/(1024*1024), (used_glob()*100)/cap );
+	printf("[téléGC] Start of collection: Used: %luM (%lu%%), timestamp: %lds\n",  used_glob()/(1024*1024), (used_glob()*100)/cap, (int64_t)(((int64_t) os::javaTimeNanos())/1e9) - start_time );
 	if(!rp_init){
 		rp_init = true;
 		post_initialize();
@@ -479,9 +484,9 @@ void end_collect_sig(int sig) {
 	//gettimeofday(&end, NULL);
 	//printf("[/téléGC] Collection:  Time: %lds;  Used before: %lu; Used after: %lu\n", end.tv_sec - start.tv_sec, start_used, used() );
 	//printf("\n");
-	printf("[téléGC] Collection: Used after: %luM (%lu%%)\n",  used_glob()/(1024*1024), (used_glob()*100)/cap );
+	printf("[téléGC] Collection: Used after: %luM (%lu%%), timestamp:%lds\n",  used_glob()/(1024*1024), (used_glob()*100)/cap, (int64_t)(((int64_t) os::javaTimeNanos())/1e9) - start_time );
 
-	softmax.store(minou(used_glob()*2, cap));
+	softmax.store(minou(used_glob()*3, cap));
 	//softmax.store(maxou(minou(used_glob()*3, cap), (cap*SOFTMAX_PER)/100 ));
 
 	//collecting.store(false);

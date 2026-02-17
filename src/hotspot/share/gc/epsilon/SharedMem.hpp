@@ -173,6 +173,7 @@ public:
 	void free();
 	int index_from_size(int size); 
 	size_t batch_index_from_size(size_t size); 
+	size_t realsize_from_size(size_t size); 
 	size_t batch_index_from_size_slow(size_t size); 
 
 };

@@ -218,8 +218,8 @@ HeapWord* PseudoTLAB::allocate(size_t word_size){
 		else
 			batch_tab[index] = SharedMem::shm->get_new_batch_exp(index + START_OF_EXP, this); //get new batch
 		batch_tab[index]->bump = 0;
-		//SharedMem::shm->rs->update_size(old_end*word_size);
-		SharedMem::shm->rs->slow_path_post_alloc(old_end*realsize_from_size(word_size));
+		SharedMem::shm->rs->update_size(old_end*word_size);
+		//SharedMem::shm->rs->slow_path_post_alloc(old_end*realsize_from_size(word_size));
 		//thread->used_local = 0;
 	}
 	

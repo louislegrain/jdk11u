@@ -410,6 +410,7 @@ HeapWord* MemAllocator::allocate_inside_tlab_slow(Allocation& allocation) const 
 }
 
 HeapWord* MemAllocator::mem_allocate(Allocation& allocation) const {
+  //printf("Allocation: %lu\n", _word_size);
   if (UseTLAB) {
     HeapWord* result = allocate_inside_tlab(allocation);
     if (result != NULL) {

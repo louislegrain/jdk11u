@@ -61,6 +61,8 @@ extern int fd_for_heap;
 extern void* epsilon_sh_mem;
 extern struct ticket_lock ticket;
 
+
+
 //extern std::atomic<int> test_collect; //TODO remove this
 
 
@@ -108,6 +110,7 @@ public:
     HeapWord* par_allocate_klass(size_t word_size, Klass* klass);
     void concurrent_post_allocate(HeapWord* allocated, size_t word_size, Klass* klass);
 	void slow_path_post_alloc(uint64_t used_local);
+	void update_size(uint64_t used_local);
     void set_end(HeapWord* value);
     size_t used() const;
     size_t capacity() const;

@@ -235,7 +235,7 @@ void BarrierSetAssembler::tlab_allocate(MacroAssembler* masm,
     __ get_thread(thread);
 #endif
   }
-
+  //__ jmp(slow_case);
   //__ warn("Fast");
   
   __ verify_tlab();

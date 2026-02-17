@@ -42,7 +42,7 @@ void EpsilonBarrierSetAssembler::tlab_allocate(MacroAssembler* masm,
   Label slow_case_and_print;
 
   
-  //__ jmp(slow_case);
+  __ jmp(slow_case);
 
 
   if (var_size_in_bytes == t2 &&  var_size_in_bytes != noreg) {
